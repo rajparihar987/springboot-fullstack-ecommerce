@@ -8,15 +8,12 @@ import com.ecommerce.project.payload.ProductResponse;
 import com.ecommerce.project.repositories.CategoryRepository;
 import com.ecommerce.project.repositories.ProductRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class ProductServiceImpl implements ProductService{
@@ -27,10 +24,16 @@ public class ProductServiceImpl implements ProductService{
 
     private final ModelMapper modelMapper;
 
-    public ProductServiceImpl(CategoryRepository categoryRepository, ProductRepository productRepository, ModelMapper modelMapper) {
+    private final FileService fileService;
+
+    @Value("${project.image}")
+    private String path;
+
+    public ProductServiceImpl(CategoryRepository categoryRepository, ProductRepository productRepository, ModelMapper modelMapper, FileService fileService) {
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
         this.modelMapper = modelMapper;
+        this.fileService = fileService;
     }
 
     @Override
@@ -39,7 +42,6 @@ public class ProductServiceImpl implements ProductService{
                 .orElseThrow(()-> new ResourceNotFoundException("Category","categoryId",categoryId));
         product.setProductImage("default.png");
         product.setCategory(category);
-        // Price after applying the discount
         double specialPrice = product.getPrice() -
                 (product.getDiscount() * 0.01) * product.getPrice();
         product.setSpecialPrice(specialPrice);
@@ -84,11 +86,9 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public ProductDTO updateProduct(Long productId, Product product) {
-        // Get hte existing product from the database
         Product productFromDb = productRepository.findById(productId)
                 .orElseThrow(()->new ResourceNotFoundException("Product","productId",productId));
 
-        // Update the product info with user the one shared in request Body
         productFromDb.setProductName(product.getProductName());
         productFromDb.setDescription(product.getDescription());
         productFromDb.setQuantity(productFromDb.getQuantity());
@@ -96,10 +96,8 @@ public class ProductServiceImpl implements ProductService{
         productFromDb.setPrice(product.getPrice());
         productFromDb.setSpecialPrice(product.getSpecialPrice());
 
-        // save to database
         Product savedProduct = productRepository.save(productFromDb);
 
-        // return it as DTO using modelmapper
         return modelMapper.map(savedProduct, ProductDTO.class);
     }
 
@@ -113,42 +111,11 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public ProductDTO updateProductImage(Long productId, MultipartFile image) throws IOException {
-        //Get product from DB
         Product productFromDb = productRepository.findById(productId)
                 .orElseThrow(()-> new ResourceNotFoundException("Product", "productId", productId));
-        //Upload the image to the server
-        //Get the file name of uploaded image
-        String path = "images/";
-        String filename = uploadImage(path, image);
-
-        //Updating new file name to the product
+        String filename = fileService.uploadImage(path, image);
         productFromDb.setProductImage(filename);
-
-        //Save the updated product
         Product updatedProduct = productRepository.save(productFromDb);
-
-        //return DTO after mapping product to DTO
         return modelMapper.map(updatedProduct, ProductDTO.class);
-    }
-
-    private String uploadImage(String path, MultipartFile file) throws IOException {
-        // file names of current/original file
-        String originalFileName = file.getOriginalFilename();
-
-        // Generate a unique file name
-        String randomId = UUID.randomUUID().toString();
-        String fileName = randomId.concat(originalFileName.substring(originalFileName.lastIndexOf('.')));
-        String filePath = path + File.separator + fileName;
-
-        // Check if path exist/ if not then create
-        File folder = new File(path);
-        if(!folder.exists())
-            folder.mkdir();
-
-        // upload to the server
-        Files.copy(file.getInputStream(), Paths.get(filePath));
-        // returning the file name
-
-        return fileName;
     }
 }
