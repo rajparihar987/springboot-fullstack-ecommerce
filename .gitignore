@@ -1,4 +1,10 @@
-# ===== Maven =====
+# =====================================================
+# Spring Boot + Maven + IntelliJ IDEA .gitignore
+# =====================================================
+
+# =========================
+# Maven
+# =========================
 /target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -8,25 +14,115 @@ dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
 
-# ===== Compiled =====
+# =========================
+# Gradle
+# =========================
+.gradle/
+build/
+
+# =========================
+# Compiled Files
+# =========================
 *.class
 
-# ===== IntelliJ IDEA =====
+# =========================
+# IntelliJ IDEA
+# =========================
 .idea/
 *.iml
 *.iws
 *.ipr
 out/
 
-# ===== VS Code =====
+# =========================
+# VS Code
+# =========================
 .vscode/
 
-# ===== Logs =====
-*.log
+# =========================
+# Eclipse
+# =========================
+.project
+.classpath
+.settings/
 
-# ===== OS Files =====
+# =========================
+# NetBeans
+# =========================
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# OS Files
+# =========================
 .DS_Store
 Thumbs.db
 
-# ===== Env =====
+# =========================
+# Environment Variables
+# =========================
 .env
+.env.*
+
+# =========================
+# Spring Boot Configs
+# =========================
+application-prod.properties
+application-prod.yml
+application-secret.properties
+
+# =========================
+# Uploaded Files / Images
+# =========================
+images/
+uploads/
+
+# =========================
+# Temp Files
+# =========================
+tmp/
+temp/
+
+# =========================
+# Spring Tool Suite
+# =========================
+.springBeans
+.sts4-cache/
+
+# =========================
+# Security / Certificates
+# =========================
+*.pem
+*.key
+*.jks
+*.p12
+
+# =========================
+# Node.js (if frontend added later)
+# =========================
+node_modules/
+dist/
+
+# =========================
+# Mac/Linux temporary files
+# =========================
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =========================
+# Windows temporary files
+# =========================
+ehthumbs.db
+Desktop.ini
