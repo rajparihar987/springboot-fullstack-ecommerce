@@ -1,5 +1,6 @@
 package com.ecommerce.project.service;
 
+import com.ecommerce.project.exceptions.APIException;
 import com.ecommerce.project.exceptions.ResourceNotFoundException;
 import com.ecommerce.project.model.Category;
 import com.ecommerce.project.model.Product;
@@ -40,10 +41,20 @@ public class ProductServiceImpl implements ProductService{
     public ProductDTO addProduct(Long categoryId, Product product) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(()-> new ResourceNotFoundException("Category","categoryId",categoryId));
-        product.setProductImage("default.png");
+
+        boolean productExists =
+                productRepository.existsByProductNameAndCategory(
+                        product.getProductName(),
+                        category
+                );
+
+        if (productExists) {
+            throw new APIException("Product Already Exists !!");
+        }
+
         product.setCategory(category);
-        double specialPrice = product.getPrice() -
-                (product.getDiscount() * 0.01) * product.getPrice();
+        product.setProductImage("default.png");
+        double specialPrice = product.getPrice() - (product.getDiscount() * 0.01) * product.getPrice();
         product.setSpecialPrice(specialPrice);
         Product savedProduct = productRepository.save(product);
         return modelMapper.map(savedProduct, ProductDTO.class);
@@ -55,6 +66,7 @@ public class ProductServiceImpl implements ProductService{
         List<ProductDTO> productDTOS = products.stream()
                 .map(product -> modelMapper.map(product, ProductDTO.class))
                 .toList();
+
         ProductResponse productResponse = new ProductResponse();
         productResponse.setContent(productDTOS);
         return productResponse;
@@ -91,7 +103,7 @@ public class ProductServiceImpl implements ProductService{
 
         productFromDb.setProductName(product.getProductName());
         productFromDb.setDescription(product.getDescription());
-        productFromDb.setQuantity(productFromDb.getQuantity());
+        productFromDb.setQuantity(product.getQuantity());
         productFromDb.setDiscount(product.getDiscount());
         productFromDb.setPrice(product.getPrice());
         productFromDb.setSpecialPrice(product.getSpecialPrice());
